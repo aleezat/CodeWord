@@ -1,4 +1,4 @@
-# Aleeza Freshman Project
+# Aleeza's Freshman Project
 import random
 games_played = 0 
 games_won = 0
