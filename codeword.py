@@ -1,157 +1,186 @@
-# Aleeza's Freshman Project
+# Aleeza Freshman Project
 import random
-games_played = 0 
+import os
+# Game statistics
+games_played = 0
 games_won = 0
 total_guesses = 0
 current_streak = 0
 best_streak = 0
+total_score = 0
+# Load saved statistics
+if os.path.exists("codeword_stats.txt"):
+    with open("codeword_stats.txt", "r") as file:
+        data = file.readlines()
+        if len(data) > 0:
+            games_played = int(data[0])
+        if len(data) > 1:
+            games_won = int(data[1])
+        if len(data) > 2:
+            total_guesses = int(data[2])
+        if len(data) > 3:
+            best_streak = int(data[3])
+        if len(data) > 4:
+            current_streak = int(data[4])
+        if len(data) > 5:
+            total_score = int(data[5])
+# Programming words
 words = ["ARRAY", "ERROR", "CLASS", "LOOPS", "BYTES",
-         "STACK", "QUEUE", "DEBUG", "INPUT", "PRINT",
-         "FLOAT", "LOGIC", "INDEX", "CACHE", "PARSE",
-         "TOKEN", "WHILE", "MERGE", "BREAK", "VALUE",
-         "TRACE", "SCOPE", "NODES", "GRAPH", "BLOCK",
-         "EVENT", "FILES", "FINAL", "SHORT"]
-definitions = {
-    "ARRAY": "A collection of values stored in order.",
-    "ERROR": "A problem that occurs while a program is running.",
+    "STACK", "QUEUE", "DEBUG", "INPUT", "PRINT",
+    "FLOAT", "LOGIC", "INDEX", "CACHE", "PARSE",
+    "TOKEN"]
+# Word definitions
+definitions = { "ARRAY": "A collection of values stored together.",
+    "ERROR": "A mistake in a program that causes a problem.",
     "CLASS": "A blueprint used to create objects in programming.",
-    "LOOPS": "A way to repeat a section of code.",
-    "BYTES": "A unit used to store digital data.",
-    "STACK": "A data structure that follows last in, first out.",
-    "QUEUE": "A data structure that follows first in, first out.",
-    "DEBUG": "The process of finding and fixing problems in code.",
-    "INPUT": "Data given to a program.",
-    "PRINT": "A command used to display information.",
-    "FLOAT": "A number that can contain a decimal.",
+    "LOOPS": "Code that repeats instructions.",
+    "BYTES": "A unit of digital information.",
+    "STACK": "A data structure that follows Last In, First Out.",
+    "QUEUE": "A data structure that follows First In, First Out.",
+    "DEBUG": "Finding and fixing errors in code.",
+    "INPUT": "Data entered into a program.",
+    "PRINT": "A command that displays information.",
+    "FLOAT": "A number that contains a decimal.",
     "LOGIC": "Rules used to make decisions in a program.",
-    "INDEX": "A position used to access an item in a sequence.",
-    "CACHE": "Stored data that helps a computer access information faster.",
-    "PARSE": "To analyze information so a program can understand it.",
-    "TOKEN": "A small piece of information used by a programming language.",
-    "WHILE": "A loop that repeats while a condition is true.",
-    "MERGE": "To combine two things into one.",
-    "BREAK": "A command used to stop a loop.",
-    "VALUE": "The actual data stored in a variable.",
-    "TRACE": "To follow the steps of a program to understand what it does.",
-    "SCOPE": "The part of a program where a variable can be accessed.",
-    "NODES": "Individual elements in a data structure such as a graph.",
-    "GRAPH": "A data structure made of connected nodes.",
-    "BLOCK": "A group of code treated as one section.",
-    "EVENT": "An action that a program can respond to.",
-    "FILES": "Collections of data stored on a computer.",
-    "FINAL": "A keyword or concept used to indicate something should not change.",
-    "SHORT": "A data type used for smaller integer values in some languages."
-}
-hints = {
-    "ARRAY": "A group of values stored in order.",
-    "ERROR": "Something went wrong in a program.",
-    "CLASS": "A blueprint for creating objects.",
-    "LOOPS": "Used to repeat code.",
-    "BYTES": "A unit of digital data.",
-    "STACK": "A data structure where the last item added is removed first.",
-    "QUEUE": "A data structure where the first item added is removed first.",
-    "DEBUG": "Finding and fixing problems in code.",
+    "INDEX": "A position of an item in a sequence.",
+    "CACHE": "Temporary storage used for faster access.",
+    "PARSE": "To analyze and interpret data or code.",
+    "TOKEN": "A meaningful unit of code or text." }
+# Hints
+hints = { "ARRAY": "Stores multiple values in one variable.",
+    "ERROR": "Something went wrong in your code.",
+    "CLASS": "Used in object-oriented programming.",
+    "LOOPS": "Repeats code.",
+    "BYTES": "Related to digital storage.",
+    "STACK": "Think of a pile of plates.",
+    "QUEUE": "Think of a line of people waiting.",
+    "DEBUG": "What programmers do when code fails.",
     "INPUT": "Information given to a program.",
-    "PRINT": "Used to display information.",
-    "FLOAT": "A number that can have a decimal.",
-    "LOGIC": "Rules used to make decisions.",
-    "INDEX": "A position used to access an item.",
-    "CACHE": "Stored information that helps data load faster.",
-    "PARSE": "To analyze information so a program can understand it.",
-    "TOKEN": "A small piece of a program or command.",
-    "WHILE": "A loop that runs while a condition is true.",
-    "MERGE": "To combine two things together.",
-    "BREAK": "Used to stop a loop.",
-    "VALUE": "The data stored in a variable.",
-    "TRACE": "Following the steps of a program.",
-    "SCOPE": "Where a variable can be accessed.",
-    "NODES": "Individual points in a data structure.",
-    "GRAPH": "A structure made of connected nodes.",
-    "BLOCK": "A group of code treated as one section.",
-    "EVENT": "An action that a program can respond to.",
-    "FILES": "Collections of data stored on a computer.",
-    "FINAL": "Something that is meant to stay unchanged.",
-    "SHORT": "A type used for smaller integer values in some languages."
-}
+    "PRINT": "Displays output in Python.",
+    "FLOAT": "A Python data type for decimals.",
+    "LOGIC": "Used with AND, OR, and NOT.",
+    "INDEX": "Tells you an item's position.",
+    "CACHE": "Helps computers access data faster.",
+    "PARSE": "Breaks down and analyzes information.",
+    "TOKEN": "A small meaningful piece of code." }
 def show_instructions():
-    print("Welcome to CodeWord!")
-    print("Guess the 5-letter programming word.")
-    print("You have 7 attempts.")
-    print("You can use 1 hint per game.")    
-    print("🟩 = correct letter and position")
-    print("🟨 = correct letter, wrong position")
-    print("⬜ = letter is not in the word")
-def get_feedback(guess, secret_word):
-    remaining = list(secret_word)
-    feedback = ["⬜"] * len(secret_word)
-    for i in range(len(secret_word)):
-        if guess[i] == secret_word[i]:
+    print("\n========== CODEWORD ==========")
+    print("Guess the hidden 5-letter programming word.")
+    print("Green = Correct letter and position.")
+    print("Yellow = Correct letter, wrong position.")
+    print("White = Letter is not in the word.")
+    print("You can ask for one hint per game.")
+    print("Hints do not use an attempt.")
+    print("Good luck!\n")
+def get_feedback(guess, target):
+    feedback = ["⬜"] * 5
+    remaining = list(target)
+    # Find correct letters in correct positions
+    for i in range(5):
+        if guess[i] == target[i]:
             feedback[i] = "🟩"
-            remaining.remove(guess[i])
-    for i in range(len(secret_word)):
-        if feedback[i] == "⬜" and guess[i] in remaining:
+            remaining[i] = None
+    # Find correct letters in wrong positions
+    for i in range(5):
+        if feedback[i] != "🟩" and guess[i] in remaining:
             feedback[i] = "🟨"
             remaining.remove(guess[i])
-    return feedback
+    return "".join(feedback)
 def show_history(guesses, feedback_history):
-    print("Guess history:")
+    print("\n========== GUESS HISTORY ==========")
     for i in range(len(guesses)):
-        print(str(i + 1) + ".", guesses[i], end="  ")
-        for j in range(len(feedback_history[i])):
-            print(feedback_history[i][j], end=" ")
-        print()
+        print(guesses[i], feedback_history[i])
 def show_stats():
-    average_guesses = round(total_guesses / games_played, 2)
-    win_rate = round((games_won / games_played) * 100)
-
-    print("--- Stats ---")
+    print("\n========== YOUR STATISTICS ==========")
     print("Games played:", games_played)
     print("Games won:", games_won)
-    print("Win rate:", win_rate, "%")
-    print("Average guesses:", average_guesses)
+    print("Total score:", total_score)
+    if games_played > 0:
+        win_rate = round((games_won / games_played) * 100, 2)
+        average_guesses = round(total_guesses / games_played, 2)
+        print("Win rate:", str(win_rate) + "%")
+        print("Average guesses:", average_guesses)
     print("Current streak:", current_streak)
     print("Best streak:", best_streak)
+    print("====================================")
 def play_game():
-    show_instructions()
     global games_played, games_won, total_guesses
-    global current_streak, best_streak
-    count = 0
-    won = False
-    hint_used = False
-    guesses = []
-    feedback_history = []
-    secret_word = random.choice(words)
-    while count < 7:
-        guess = input("Guess the programming word: ").upper()
-        if guess == "HINT":
-            if hint_used:
-                print("You already used your hint!")
-            else:
-                print("Hint:", hints[secret_word])
-                hint_used = True
-            continue
-        if len(guess) != 5:
-            print("Your guess must be 5 letters!")
-            continue
-        if guess in guesses:
-            print("You already guessed that word!")
-            continue
-        guesses.append(guess)
-        count += 1
-        feedback = get_feedback(guess, secret_word)
-        feedback_history.append(feedback)
-        show_history(guesses, feedback_history)
-        if guess == secret_word:
-            print("You got it!")
-            print("Definition:", definitions[secret_word])
-            won = True
+    global current_streak, best_streak, total_score
+    show_instructions()
+    # Choose difficulty
+    while True:
+        difficulty = input(
+            "Choose difficulty (Easy, Medium, Hard): "
+        ).upper()
+        if difficulty == "EASY":
+            max_attempts = 7
+            points = 70
+            break
+        elif difficulty == "MEDIUM":
+            max_attempts = 6
+            points = 100
+            break
+        elif difficulty == "HARD":
+            max_attempts = 5
+            points = 150
             break
         else:
-            print("Not quite!")
-        if count == 7:
-            print("Game over!")
-            print("The word was:", secret_word)
-            print("Definition:", definitions[secret_word])
+            print("Invalid difficulty. Please try again.")
+    target = random.choice(words)
+    guesses = []
+    feedback_history = []
+    count = 0
+    hint_used = False
+    won = False
+    print("\nDifficulty:", difficulty)
+    print("You have", max_attempts, "attempts.")
+    print("Type HINT to reveal a clue.\n")
+    while count < max_attempts:
+        guess = input("Enter your 5-letter guess: ").upper()
+        # Hint system
+        if guess == "HINT":
+            if not hint_used:
+                print("Hint:", hints[target])
+                hint_used = True
+            else:
+                print("You already used your hint.")
+            continue
+        # Validate guess length
+        if len(guess) != 5:
+            print("Your guess must be exactly 5 letters.")
+            continue
+        # Prevent repeated guesses
+        if guess in guesses:
+            print("You already guessed that word.")
+            continue
+        # Count valid guesses
+        count += 1
+        guesses.append(guess)
+        feedback = get_feedback(guess, target)
+        feedback_history.append(feedback)
+        print(feedback)
+        print("Attempts remaining:", max_attempts - count)
+        if guess == target:
+            won = True
+            print("\nCorrect! You guessed the word!")
+            break
+    # Show results
+    show_history(guesses, feedback_history)
+    if won:
+        print("\nYou won!")
+        print("Definition:", definitions[target])
+        bonus = (max_attempts - count) * 10
+        score_earned = points + bonus
+        print("Base points:", points)
+        print("Bonus points:", bonus)
+        print("Points earned:", score_earned)
+        total_score += score_earned
+    else:
+        print("\nGame over!")
+        print("The correct word was:", target)
+        print("Definition:", definitions[target])
+        print("No points earned this game.")
+    # Update statistics
     games_played += 1
     total_guesses += count
     if won:
@@ -161,9 +190,19 @@ def play_game():
             best_streak = current_streak
     else:
         current_streak = 0
+    # Save statistics
+    with open("codeword_stats.txt", "w") as file:
+        file.write(str(games_played) + "\n")
+        file.write(str(games_won) + "\n")
+        file.write(str(total_guesses) + "\n")
+        file.write(str(best_streak) + "\n")
+        file.write(str(current_streak) + "\n")
+        file.write(str(total_score) + "\n")
     show_stats()
+# Main game loop
 while True:
     play_game()
-    again = input("Play again? (yes/no): ").upper()
+    again = input("\nWould you like to play again? (Yes/No): ").upper()
     if again != "YES":
+        print("\nThanks for playing CodeWord!")
         break
