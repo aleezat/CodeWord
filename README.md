@@ -77,5 +77,4 @@ The current word list includes:
 - Add more programming-related words
 - Validate guesses against the programming word list
 - Save statistics and leaderboard scores between sessions
-- Add a graphical user interface (GUI)
 - Store cumulative scores for individual players
